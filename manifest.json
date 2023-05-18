@@ -1,0 +1,11 @@
+{
+  "name": "Lookup Reminder",
+  "description": "Look up words in a dictionary and quiz on words already known",
+  "version": "0.1",
+  "host_permissions": ["*://*/"],
+  "permissions": ["contextMenus", "scripting"],
+  "background": {
+    "service_worker": "service_worker.js"
+  },
+  "manifest_version": 3
+}
