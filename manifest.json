@@ -2,6 +2,12 @@
   "name": "Lookup Reminder",
   "description": "Look up words in a dictionary and quiz on words already known",
   "version": "0.1",
+  "web_accessible_resources": [
+    {
+        "resources": ["dialog.html"],
+        "matches": ["<all_urls>"]
+    }
+  ],
   "host_permissions": ["*://*/"],
   "permissions": ["contextMenus", "scripting"],
   "background": {

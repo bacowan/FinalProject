@@ -18,11 +18,16 @@ async function onLookupClicked(info) {
 }
 
 function lookupWord(text) {
-    const div = document.createElement("div");
-    div.style.width = '150px';
-    div.style.height = '150px';
-    div.style.background = "red";
-    div.style.position = "fixed";
-
-    document.body.appendChild(div);
+    var iframe = document.createElement("iframe");
+    iframe.src = chrome.runtime.getURL("dialog.html") + "?word=" + encodeURIComponent(text);
+    var dialog = document.createElement("dialog");
+    dialog.appendChild(iframe);
+    /*var button = document.createElement("button");
+    button.textContent = "Close";
+    iframe.appendChild(button);
+    button.addEventListener("click", function() {
+        dialog.close();
+    });*/
+    document.body.appendChild(dialog);
+    dialog.showModal();
 }
