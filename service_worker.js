@@ -18,16 +18,21 @@ async function onLookupClicked(info) {
 }
 
 function lookupWord(text) {
+    // create the html
     var iframe = document.createElement("iframe");
     iframe.src = chrome.runtime.getURL("dialog.html") + "?word=" + encodeURIComponent(text);
     var dialog = document.createElement("dialog");
     dialog.appendChild(iframe);
-    /*var button = document.createElement("button");
-    button.textContent = "Close";
-    iframe.appendChild(button);
-    button.addEventListener("click", function() {
-        dialog.close();
-    });*/
     document.body.appendChild(dialog);
     dialog.showModal();
+
+    // set up events for closing the dialog
+    function closeDialogEventListener(event) {
+        dialog.close();
+    }
+
+    dialog.addEventListener("close", (event) => {
+        window.removeEventListener("message", closeDialogEventListener);
+    });
+    window.addEventListener("message", closeDialogEventListener);
 }
