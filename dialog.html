@@ -7,14 +7,26 @@
 
 <button id="closeButton" class="closeButton">x</button>
 <h1 id="header"></h1>
-<div id="initialText">
-    <p id="shouldLookupParagraph"></p>
+<div id="initialText" class="hidden">
+    <p>You haven't seen this word before! Would you like to look it up?</p>
     <button id="lookupButton">Yes</button>
+</div>
+<div id="alreadySeen" class="hidden">
+    <p>You've seen this word before! Can you remember what it means?</p>
+    <button>Hint</button>
+    <button>Show Answer</button>
+</div>
+<div id="hint" class="hidden">
+    <p>You've seen this word used in this context before:</p>
+    <p id="contextParagraph"></p>
+    <button>Next Hint</button>
+    <button>Show Answer</button>
 </div>
 <div id="result" class="hidden">
     <p id="furigana"></p>
     <p id="pos"></p>
     <p id="definition"></p>
+    <!--include a "how well did you do" form (think anki)? should do some research on how well that works-->
 </div>
 <div id="loadingSpinner" class="hidden loader">
     
