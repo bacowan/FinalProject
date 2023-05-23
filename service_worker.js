@@ -24,7 +24,6 @@ function lookupWord() {
     const selection = window.getSelection();
     const text = selection.toString();
     const context = getContext(selection);
-    console.log(context);
 
     // create the html
     var iframe = document.createElement("iframe");
@@ -32,7 +31,7 @@ function lookupWord() {
     if (context != null) {
         url += "&context=" + encodeURIComponent(context);
     }
-    iframe.src = chrome.runtime.getURL("dialog.html") + "?word=" + encodeURIComponent(text);
+    iframe.src = url;
     var dialog = document.createElement("dialog");
     dialog.appendChild(iframe);
     document.body.appendChild(dialog);
