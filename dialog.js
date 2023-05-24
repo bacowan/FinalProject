@@ -2,7 +2,12 @@ async function Initialize(word, contextLeft, contextRight) {
     // events
     document.getElementById('closeButton').addEventListener('click', closeClicked);
     document.getElementById('lookupButton').addEventListener('click', async () => await lookupClicked(word, contextLeft, contextRight));
-    document.getElementById('hintButton').addEventListener('click', async () => await showHintClicked(word));
+    document.getElementById('hintShowAnswerButton').addEventListener('click', async () => await lookupClicked(word, contextLeft, contextRight));
+    document.getElementById('showAnswerButton').addEventListener('click', async () => await lookupClicked(word, contextLeft, contextRight));
+    
+    let currentHint = 0;
+    document.getElementById('hintButton').addEventListener('click', async() => nextHint(word, currentHint++));
+    document.getElementById('nextHintButton').addEventListener('click', async() => nextHint(word, currentHint++));
 
     // header
     const header = document.getElementById("header");
@@ -26,9 +31,8 @@ function closeClicked() {
     window.parent.postMessage("close", "*");
 }
 
-async function showHintClicked(word) {
-    const alreadySeen = document.getElementById("alreadySeen");
-    alreadySeen.classList.add("hidden");
+async function nextHint(word, currentHint) {
+    hideAll();
     const hintDiv = document.getElementById("hint");
     hintDiv.classList.remove("hidden");
     const contextParagraph = document.getElementById("contextParagraph");
@@ -36,7 +40,8 @@ async function showHintClicked(word) {
     const lookup = (await chrome.storage.local.get(word))[word];
 
     if (lookup != null && Array.isArray(lookup.context) && lookup.context.length > 0) {
-        contextParagraph.innerHTML = lookup.context[0].left + "<mark>" + word + "</mark>" + lookup.context[0].right;
+        const context = lookup.context[currentHint % lookup.context.length];
+        contextParagraph.innerHTML = context.left + "<mark>" + word + "</mark>" + context.right;
     }
     else {
         // TODO: Error handling
@@ -45,8 +50,7 @@ async function showHintClicked(word) {
 
 async function lookupClicked(word, contextLeft, contextRight) {
     // show the loading spinner
-    const initialText = document.getElementById("initialText");
-    initialText.classList.add("hidden");
+    hideAll();
     const loadingSpinner = document.getElementById("loadingSpinner");
     loadingSpinner.classList.remove("hidden");
 
@@ -54,7 +58,7 @@ async function lookupClicked(word, contextLeft, contextRight) {
     const response = await fetch("https://jisho.org/api/v1/search/words?keyword=" + encodeURIComponent(word));
     const jsonData = await response.json();
     // store the word history
-    await StoreWordHistory(word, contextLeft, contextRight);
+    await storeWordHistory(word, contextLeft, contextRight);
 
     // hide the loading spinner
     loadingSpinner.classList.add("hidden");
@@ -62,7 +66,7 @@ async function lookupClicked(word, contextLeft, contextRight) {
     resultDiv.classList.remove("hidden");
 
     // show the response
-    const definition = GetDefinitionFromResult(jsonData, word);
+    const definition = getDefinitionFromResult(jsonData, word);
     const definitionDiv = document.getElementById("definition");
     if (typeof definition === 'string') {
         // nothing relevant found
@@ -78,7 +82,7 @@ async function lookupClicked(word, contextLeft, contextRight) {
     }
 }
 
-function GetDefinitionFromResult(jsonData, word) {
+function getDefinitionFromResult(jsonData, word) {
     if (jsonData.data.length > 0) {
         let match = jsonData.data.find(j => j.slug === word);
         if (match == null) {
@@ -95,7 +99,7 @@ function GetDefinitionFromResult(jsonData, word) {
     return "No dictionary matches found";
 }
 
-async function StoreWordHistory(word, contextLeft, contextRight) {
+async function storeWordHistory(word, contextLeft, contextRight) {
     let wordData = (await chrome.storage.local.get(word))[word];
     if (wordData == null) {
         wordData = {}
@@ -108,11 +112,19 @@ async function StoreWordHistory(word, contextLeft, contextRight) {
         wordData.context = [];
     }
 
-    wordData.lookupCount++;
-    wordData.context.push({ left: contextLeft, right: contextRight });
-    // TODO: max number of contexts? Maybe filter out old contexts.
+    if (!wordData.context.some(c => c.left === contextLeft) || !wordData.context.some(c => c.right === contextRight)) {
+        wordData.lookupCount++;
+        wordData.context.push({ left: contextLeft, right: contextRight });
+        // TODO: max number of contexts? Maybe filter out old contexts.
+        await chrome.storage.local.set({ [word]: wordData });
+    }
+}
 
-    await chrome.storage.local.set({ [word]: wordData });
+function hideAll() {
+    document.getElementById("initialText").classList.add("hidden");
+    document.getElementById("alreadySeen").classList.add("hidden");
+    document.getElementById("hint").classList.add("hidden");
+    document.getElementById("result").classList.add("hidden");
 }
 
 const params = new URLSearchParams(window.location.search);
