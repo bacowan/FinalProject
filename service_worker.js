@@ -13,7 +13,6 @@ async function onLookupClicked(info) {
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: lookupWord
-        //args: [ info.selectionText ]
     });
 }
 
@@ -27,19 +26,24 @@ function lookupWord() {
 
     // create the html
     var iframe = document.createElement("iframe");
+    iframe.style.userSelect = "none";
     let url = chrome.runtime.getURL("dialog.html") + "?word=" + encodeURIComponent(text);
     if (context != null) {
         url += "&context=" + encodeURIComponent(context);
     }
     iframe.src = url;
     var dialog = document.createElement("dialog");
+    dialog.style.padding = 11;
     dialog.appendChild(iframe);
+    setupDrag(dialog, iframe);
+    setupResize(dialog);
     document.body.appendChild(dialog);
     dialog.showModal();
 
     // set up events for closing the dialog
     function closeDialogEventListener(event) {
         dialog.close();
+        dialog.remove();
     }
 
     dialog.addEventListener("close", (event) => {
@@ -127,5 +131,48 @@ function lookupWord() {
                 splitFound: false
             };
         }
+    }
+
+    // see https://stackoverflow.com/a/24050777
+    function setupDrag(element, iframe) {
+        var isDown = false;
+        var offset = [0,0];
+        element.addEventListener('mousedown', function(e) {
+            const elementRect = element.getBoundingClientRect();
+            console.log(elementRect);
+            if (elementRect.x < e.clientX && elementRect.x + elementRect.width >= e.clientX
+                && elementRect.y < e.clientY && elementRect.y + elementRect.height >= e.clientY) {
+                    iframe.style.pointerEvents = "none";
+                    isDown = true;
+                    offset = [
+                        element.offsetLeft - e.clientX,
+                        element.offsetTop - e.clientY
+                    ];
+                }
+        }, true);
+        
+        element.addEventListener('mouseup', function() {
+            iframe.style.pointerEvents = "auto";
+            isDown = false;
+        }, true);
+        
+        element.addEventListener('mousemove', function(event) {
+            event.preventDefault();
+            console.log(isDown);
+            if (isDown) {
+                element.style.margin = 0;
+                mousePosition = {
+                    x : event.clientX,
+                    y : event.clientY
+        
+                };
+                element.style.left = (mousePosition.x + offset[0]) + 'px';
+                element.style.top  = (mousePosition.y + offset[1]) + 'px';
+            }
+        }, true);
+    }
+
+    function setupResize(element) {
+
     }
 }
