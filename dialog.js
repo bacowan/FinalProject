@@ -1,7 +1,7 @@
-async function Initialize(word, context) {
+async function Initialize(word, contextLeft, contextRight) {
     // events
     document.getElementById('closeButton').addEventListener('click', closeClicked);
-    document.getElementById('lookupButton').addEventListener('click', async () => await lookupClicked(word, context));
+    document.getElementById('lookupButton').addEventListener('click', async () => await lookupClicked(word, contextLeft, contextRight));
     document.getElementById('hintButton').addEventListener('click', async () => await showHintClicked(word));
 
     // header
@@ -36,14 +36,14 @@ async function showHintClicked(word) {
     const lookup = (await chrome.storage.local.get(word))[word];
 
     if (lookup != null && Array.isArray(lookup.context) && lookup.context.length > 0) {
-        contextParagraph.innerText = lookup.context[0];
+        contextParagraph.innerHTML = lookup.context[0].left + "<mark>" + word + "</mark>" + lookup.context[0].right;
     }
     else {
         // TODO: Error handling
     }
 }
 
-async function lookupClicked(word, context) {
+async function lookupClicked(word, contextLeft, contextRight) {
     // show the loading spinner
     const initialText = document.getElementById("initialText");
     initialText.classList.add("hidden");
@@ -54,7 +54,7 @@ async function lookupClicked(word, context) {
     const response = await fetch("https://jisho.org/api/v1/search/words?keyword=" + encodeURIComponent(word));
     const jsonData = await response.json();
     // store the word history
-    await StoreWordHistory(word, context);
+    await StoreWordHistory(word, contextLeft, contextRight);
 
     // hide the loading spinner
     loadingSpinner.classList.add("hidden");
@@ -95,7 +95,7 @@ function GetDefinitionFromResult(jsonData, word) {
     return "No dictionary matches found";
 }
 
-async function StoreWordHistory(word, context) {
+async function StoreWordHistory(word, contextLeft, contextRight) {
     let wordData = (await chrome.storage.local.get(word))[word];
     if (wordData == null) {
         wordData = {}
@@ -109,7 +109,7 @@ async function StoreWordHistory(word, context) {
     }
 
     wordData.lookupCount++;
-    wordData.context.push(context);
+    wordData.context.push({ left: contextLeft, right: contextRight });
     // TODO: max number of contexts? Maybe filter out old contexts.
 
     await chrome.storage.local.set({ [word]: wordData });
@@ -117,6 +117,7 @@ async function StoreWordHistory(word, context) {
 
 const params = new URLSearchParams(window.location.search);
 const word = params.get("word");
-const context = params.get("context");
+const contextLeft = params.get("contextLeft");
+const contextRight = params.get("contextRight");
 console.log(window.location);
-Initialize(word, context);
+Initialize(word, contextLeft, contextRight);

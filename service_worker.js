@@ -31,7 +31,7 @@ function lookupWord() {
     iframe.style.width = "100%";
     let url = chrome.runtime.getURL("dialog.html") + "?word=" + encodeURIComponent(text);
     if (context != null) {
-        url += "&context=" + encodeURIComponent(context);
+        url += "&contextLeft=" + encodeURIComponent(context.left) + "&contextRight=" + encodeURIComponent(context.right);
     }
     iframe.src = url;
     var dialog = document.createElement("dialog");
@@ -101,8 +101,11 @@ function lookupWord() {
                     rightContext = rightContext + rightContextSplit.context;
                 }
             }
-    
-            return leftContext + selection.toString() + rightContext;
+
+            return {
+                left: leftContext,
+                right: rightContext
+            };
         }
         else {
             return null;
