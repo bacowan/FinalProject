@@ -13,6 +13,9 @@ async function Initialize(word, contextLeft, contextRight) {
     const header = document.getElementById("header");
     header.innerText = word;
 
+    // encounter plot
+    setupEncounterPlot(document.getElementById('plot'));
+
     // initial content will be based on if this word has been seen before
     let lookup = (await chrome.storage.local.get(word))[word];
     if (lookup == null || lookup.lookupCount == null || lookup.lookupCount === 0) {
@@ -118,6 +121,11 @@ async function storeWordHistory(word, contextLeft, contextRight) {
         // TODO: max number of contexts? Maybe filter out old contexts.
         await chrome.storage.local.set({ [word]: wordData });
     }
+}
+
+function setupEncounterPlot(div) {
+    const plot = Plot.rectY({length: 10000}, Plot.binX({y: "count"}, {x: Math.random})).plot();
+    div.append(plot);
 }
 
 function hideAll() {

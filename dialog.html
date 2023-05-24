@@ -13,6 +13,7 @@
 </div>
 <div id="alreadySeen" class="hidden">
     <p>You've seen this word before! Can you remember what it means?</p>
+    <div id="plot"></div>
     <button id="hintButton">Hint</button>
     <button id="showAnswerButton">Show Answer</button>
 </div>
@@ -26,12 +27,13 @@
     <p id="furigana"></p>
     <p id="pos"></p>
     <p id="definition"></p>
-    <!--include a "how well did you do" form (think anki)? should do some research on how well that works-->
 </div>
-<div id="loadingSpinner" class="hidden loader">
-    
-</div>
+<div id="loadingSpinner" class="hidden loader"></div>
 
+<!--<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6"></script>-->
+<script src="d3.js"></script>
+<script src="plot.js"></script>
 <script src="dialog.js"></script>
 </body>
 </html>
