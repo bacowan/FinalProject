@@ -46,22 +46,32 @@ function lookupWord() {
     const dialogRect = dialog.getBoundingClientRect();
     const left = dialogRect.left + "px";
     const top = dialogRect.top + "px";
-    console.log(top);
-    console.log(left);
     dialog.style.margin = 0;
     dialog.style.left = left;
     dialog.style.top = top;
 
     // set up events for closing the dialog
-    function closeDialogEventListener(event) {
-        dialog.close();
-        dialog.remove();
+    function dialogEventListener(event) {
+        if (event.origin === new URL(chrome.runtime.getURL("dialog.html")).origin) {
+            if (event.data.name === "close") {
+                dialog.close();
+                dialog.remove();
+            }
+            else if (event.data.name === "resize") {
+                const styles = window.getComputedStyle(dialog);
+                console.log(parseInt(styles.height));
+                console.log(event.data.height + parseInt(styles.paddingTop) + parseInt(styles.paddingBottom));
+                console.log(Math.max(parseInt(styles.height), event.data.height + parseInt(styles.paddingTop) + parseInt(styles.paddingBottom)));
+                dialog.style.height = Math.max(parseInt(styles.height), event.data.height + parseInt(styles.paddingTop) + parseInt(styles.paddingBottom)) + "px";
+                dialog.style.width = Math.max(parseInt(styles.width), event.data.width + parseInt(styles.paddingLeft) + parseInt(styles.paddingRight)) + "px";
+            }
+        }
     }
 
     dialog.addEventListener("close", (event) => {
-        window.removeEventListener("message", closeDialogEventListener);
+        window.removeEventListener("message", dialogEventListener);
     });
-    window.addEventListener("message", closeDialogEventListener);
+    window.addEventListener("message", dialogEventListener);
 
 
     // Helper functions

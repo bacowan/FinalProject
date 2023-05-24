@@ -20,24 +20,20 @@ async function Initialize(word, contextLeft, contextRight) {
     let lookup = (await chrome.storage.local.get(word))[word];
     if (lookup == null || lookup.lookupCount == null || lookup.lookupCount === 0) {
         // this is the first time we've seen this word
-        const initialText = document.getElementById("initialText");
-        initialText.classList.remove("hidden");
+        updateDivShown("initialText");
     }
     else {
         // we've seen this word already
-        const alreadySeen = document.getElementById("alreadySeen");
-        alreadySeen.classList.remove("hidden");
+        updateDivShown("alreadySeen");
     }
 }
 
 function closeClicked() {
-    window.parent.postMessage("close", "*");
+    window.parent.postMessage({ name: "close" }, "*");
 }
 
 async function nextHint(word, currentHint) {
-    hideAll();
-    const hintDiv = document.getElementById("hint");
-    hintDiv.classList.remove("hidden");
+    updateDivShown("hint");
     const contextParagraph = document.getElementById("contextParagraph");
 
     const lookup = (await chrome.storage.local.get(word))[word];
@@ -53,9 +49,7 @@ async function nextHint(word, currentHint) {
 
 async function lookupClicked(word, contextLeft, contextRight) {
     // show the loading spinner
-    hideAll();
-    const loadingSpinner = document.getElementById("loadingSpinner");
-    loadingSpinner.classList.remove("hidden");
+    updateDivShown("loadingSpinner");
 
     // load the data
     const response = await fetch("https://jisho.org/api/v1/search/words?keyword=" + encodeURIComponent(word));
@@ -83,6 +77,19 @@ async function lookupClicked(word, contextLeft, contextRight) {
         posDiv.innerText = definition.parts_of_speech.join("; ");
         furiganaDiv.innerText = definition.furigana;
     }
+}
+
+function updateDivShown(divName) {
+    hideAll();
+    const loadingSpinner = document.getElementById(divName);
+    loadingSpinner.classList.remove("hidden");
+    window.parent.postMessage(
+        {
+            name: "resize",
+            height: document.documentElement.scrollHeight,
+            width: document.documentElement.scrollWidth
+        },
+        "*");
 }
 
 function getDefinitionFromResult(jsonData, word) {
@@ -124,7 +131,20 @@ async function storeWordHistory(word, contextLeft, contextRight) {
 }
 
 function setupEncounterPlot(div) {
-    const plot = Plot.rectY({length: 10000}, Plot.binX({y: "count"}, {x: Math.random})).plot();
+    const plot = Plot.plot({
+        marks: [
+            Plot.rectY(
+                [
+                    { Date: new Date(), "Volume": 1 },
+                    { Date: new Date(2023, 1, 1), "Volume": 2 },
+                    { Date: new Date(2023, 1, 2), "Volume": 1 },
+                    { Date: new Date(2023, 2, 1), "Volume": 1 }
+                ],
+                {x: "Date", interval: "week", y: "Volume"}),
+            Plot.ruleY([0]),
+            Plot.axisY({interval: 1, tickFormat: x => Math.floor(x).toString()})
+        ]
+      });
     div.append(plot);
 }
 
