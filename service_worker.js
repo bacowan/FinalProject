@@ -27,6 +27,8 @@ function lookupWord() {
     // create the html
     var iframe = document.createElement("iframe");
     iframe.style.userSelect = "none";
+    iframe.style.height = "100%";
+    iframe.style.width = "100%";
     let url = chrome.runtime.getURL("dialog.html") + "?word=" + encodeURIComponent(text);
     if (context != null) {
         url += "&context=" + encodeURIComponent(context);
@@ -34,11 +36,21 @@ function lookupWord() {
     iframe.src = url;
     var dialog = document.createElement("dialog");
     dialog.style.padding = 11;
+    dialog.style.overflow = "hidden";
     dialog.appendChild(iframe);
     setupDrag(dialog, iframe);
     setupResize(dialog);
     document.body.appendChild(dialog);
     dialog.showModal();
+
+    const dialogRect = dialog.getBoundingClientRect();
+    const left = dialogRect.left + "px";
+    const top = dialogRect.top + "px";
+    console.log(top);
+    console.log(left);
+    dialog.style.margin = 0;
+    dialog.style.left = left;
+    dialog.style.top = top;
 
     // set up events for closing the dialog
     function closeDialogEventListener(event) {
@@ -139,9 +151,11 @@ function lookupWord() {
         var offset = [0,0];
         element.addEventListener('mousedown', function(e) {
             const elementRect = element.getBoundingClientRect();
-            console.log(elementRect);
+            const styles = window.getComputedStyle(element);
+            const topPadding = parseInt(styles.paddingTop);
+            console.log(topPadding);
             if (elementRect.x < e.clientX && elementRect.x + elementRect.width >= e.clientX
-                && elementRect.y < e.clientY && elementRect.y + elementRect.height >= e.clientY) {
+                && elementRect.y < e.clientY && elementRect.y + topPadding >= e.clientY) {
                     iframe.style.pointerEvents = "none";
                     isDown = true;
                     offset = [
@@ -158,9 +172,7 @@ function lookupWord() {
         
         element.addEventListener('mousemove', function(event) {
             event.preventDefault();
-            console.log(isDown);
             if (isDown) {
-                element.style.margin = 0;
                 mousePosition = {
                     x : event.clientX,
                     y : event.clientY
@@ -173,6 +185,6 @@ function lookupWord() {
     }
 
     function setupResize(element) {
-
+        element.style.resize = "both";
     }
 }
