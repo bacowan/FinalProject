@@ -13,17 +13,15 @@ async function Initialize(word, contextLeft, contextRight) {
     const header = document.getElementById("header");
     header.innerText = word;
 
-    // encounter plot
-    setupEncounterPlot(document.getElementById('plot'));
-
     // initial content will be based on if this word has been seen before
     let lookup = (await chrome.storage.local.get(word))[word];
-    if (lookup == null || lookup.lookupCount == null || lookup.lookupCount === 0) {
+    if (lookup == null || !Array.isArray(lookup.encounters) || lookup.encounters.length === 0) {
         // this is the first time we've seen this word
         updateDivShown("initialText");
     }
     else {
         // we've seen this word already
+        setupEncounterPlot(document.getElementById('plot'), lookup);
         updateDivShown("alreadySeen");
     }
 }
@@ -115,32 +113,48 @@ async function storeWordHistory(word, contextLeft, contextRight) {
         wordData = {}
     }
     
-    if (typeof wordData.lookupCount !== 'number') {
-        wordData.lookupCount = 0;
+    if (!Array.isArray(wordData.encounters)) {
+        wordData.encounters = [];
     }
     if (!Array.isArray(wordData.context)) {
         wordData.context = [];
     }
 
     if (!wordData.context.some(c => c.left === contextLeft) || !wordData.context.some(c => c.right === contextRight)) {
-        wordData.lookupCount++;
+        wordData.encounters.push(new Date().getTime());
         wordData.context.push({ left: contextLeft, right: contextRight });
+        console.log(wordData);
         // TODO: max number of contexts? Maybe filter out old contexts.
         await chrome.storage.local.set({ [word]: wordData });
     }
 }
 
-function setupEncounterPlot(div) {
+function setupEncounterPlot(div, lookup) {
+    const values = lookup.encounters.reduce(
+        (accumulator, currentValue) => {
+            const asDate = new Date(currentValue);
+            const week = asDate.setDate(asDate.getDate() - (asDate.getDay() + 6) % 7);
+            if (week in accumulator) {
+                accumulator[week]++;
+            }
+            else {
+                accumulator[week] = 1;
+            }
+            return accumulator;
+        },
+        {}
+    );
     const plot = Plot.plot({
         marks: [
             Plot.rectY(
-                [
+                Object.entries(values).map((key, value) => ({ Date: key, Occurances: value })),
+                /*[
                     { Date: new Date(), "Volume": 1 },
                     { Date: new Date(2023, 1, 1), "Volume": 2 },
                     { Date: new Date(2023, 1, 2), "Volume": 1 },
                     { Date: new Date(2023, 2, 1), "Volume": 1 }
-                ],
-                {x: "Date", interval: "week", y: "Volume"}),
+                ],*/
+                {x: "Date", interval: "week", y: "Occurances"}),
             Plot.ruleY([0]),
             Plot.axisY({interval: 1, tickFormat: x => Math.floor(x).toString()})
         ]
