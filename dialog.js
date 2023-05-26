@@ -120,43 +120,27 @@ async function storeWordHistory(word, contextLeft, contextRight) {
         wordData.context = [];
     }
 
+    wordData.encounters.push(new Date().getTime());
     if (!wordData.context.some(c => c.left === contextLeft) || !wordData.context.some(c => c.right === contextRight)) {
-        wordData.encounters.push(new Date().getTime());
         wordData.context.push({ left: contextLeft, right: contextRight });
-        console.log(wordData);
         // TODO: max number of contexts? Maybe filter out old contexts.
-        await chrome.storage.local.set({ [word]: wordData });
     }
+    await chrome.storage.local.set({ [word]: wordData });
 }
 
 function setupEncounterPlot(div, lookup) {
-    const values = lookup.encounters.reduce(
-        (accumulator, currentValue) => {
-            const asDate = new Date(currentValue);
-            const week = asDate.setDate(asDate.getDate() - (asDate.getDay() + 6) % 7);
-            if (week in accumulator) {
-                accumulator[week]++;
-            }
-            else {
-                accumulator[week] = 1;
-            }
-            return accumulator;
-        },
-        {}
-    );
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
     const plot = Plot.plot({
+        height: 300,
+        x: {
+            domain: [threeMonthsAgo, new Date()]
+        },
         marks: [
-            Plot.rectY(
-                Object.entries(values).map((key, value) => ({ Date: key, Occurances: value })),
-                /*[
-                    { Date: new Date(), "Volume": 1 },
-                    { Date: new Date(2023, 1, 1), "Volume": 2 },
-                    { Date: new Date(2023, 1, 2), "Volume": 1 },
-                    { Date: new Date(2023, 2, 1), "Volume": 1 }
-                ],*/
-                {x: "Date", interval: "week", y: "Occurances"}),
-            Plot.ruleY([0]),
-            Plot.axisY({interval: 1, tickFormat: x => Math.floor(x).toString()})
+            Plot.dotX(
+                lookup.encounters.map(e => ({Date: new Date(e)})),
+                Plot.dodgeY({x: "Date", r: 5})),
+            Plot.axisX({tickFormat: "%b", ticks: 3, fontSize: 30})
         ]
       });
     div.append(plot);
