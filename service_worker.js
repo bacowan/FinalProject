@@ -59,9 +59,6 @@ function lookupWord() {
             }
             else if (event.data.name === "resize") {
                 const styles = window.getComputedStyle(dialog);
-                console.log(parseInt(styles.height));
-                console.log(event.data.height + parseInt(styles.paddingTop) + parseInt(styles.paddingBottom));
-                console.log(Math.max(parseInt(styles.height), event.data.height + parseInt(styles.paddingTop) + parseInt(styles.paddingBottom)));
                 dialog.style.height = Math.max(parseInt(styles.height), event.data.height + parseInt(styles.paddingTop) + parseInt(styles.paddingBottom)) + "px";
                 dialog.style.width = Math.max(parseInt(styles.width), event.data.width + parseInt(styles.paddingLeft) + parseInt(styles.paddingRight)) + "px";
             }
@@ -166,7 +163,6 @@ function lookupWord() {
             const elementRect = element.getBoundingClientRect();
             const styles = window.getComputedStyle(element);
             const topPadding = parseInt(styles.paddingTop);
-            console.log(topPadding);
             if (elementRect.x < e.clientX && elementRect.x + elementRect.width >= e.clientX
                 && elementRect.y < e.clientY && elementRect.y + topPadding >= e.clientY) {
                     iframe.style.pointerEvents = "none";

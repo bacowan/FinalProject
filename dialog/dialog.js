@@ -154,5 +154,4 @@ const params = new URLSearchParams(window.location.search);
 const word = params.get("word");
 const contextLeft = params.get("contextLeft");
 const contextRight = params.get("contextRight");
-console.log(window.location);
 Initialize(word, contextLeft, contextRight);
