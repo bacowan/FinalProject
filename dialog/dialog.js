@@ -93,10 +93,7 @@ function updateDivShown(divName) {
 function getDefinitionFromResult(jsonData, word) {
     if (jsonData.data.length > 0) {
         let match = jsonData.data.find(j => j.slug === word);
-        if (match == null) {
-            match = jsonData.data[0];
-        }
-        if (match.japanese.length > 0 && match.senses.length > 0) {
+        if (match != null && match.japanese.length > 0 && match.senses.length > 0) {
             return {
                 furigana: match.japanese[0].reading,
                 english: match.senses[0].english_definitions,

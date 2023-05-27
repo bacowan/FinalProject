@@ -29,7 +29,7 @@ function lookupWord() {
     iframe.style.userSelect = "none";
     iframe.style.height = "100%";
     iframe.style.width = "100%";
-    let url = chrome.runtime.getURL("dialog.html") + "?word=" + encodeURIComponent(text);
+    let url = chrome.runtime.getURL("dialog/dialog.html") + "?word=" + encodeURIComponent(text);
     if (context != null) {
         url += "&contextLeft=" + encodeURIComponent(context.left) + "&contextRight=" + encodeURIComponent(context.right);
     }
