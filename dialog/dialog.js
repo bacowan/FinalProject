@@ -36,6 +36,8 @@ async function nextHint(word, currentHint) {
 
     const lookup = (await chrome.storage.local.get(word))[word];
 
+    document.getElementById('nextHintButton').innerText = `Next Hint (${(currentHint % lookup.context.length) + 1}/${lookup.context.length})`;
+
     if (lookup != null && Array.isArray(lookup.context) && lookup.context.length > 0) {
         const context = lookup.context[currentHint % lookup.context.length];
         contextParagraph.innerHTML = context.left + "<mark>" + word + "</mark>" + context.right;
@@ -52,6 +54,7 @@ async function lookupClicked(word, contextLeft, contextRight) {
     // load the data
     const response = await fetch("https://jisho.org/api/v1/search/words?keyword=" + encodeURIComponent(word));
     const jsonData = await response.json();
+    
     // store the word history
     await storeWordHistory(word, contextLeft, contextRight);
 
@@ -75,6 +78,15 @@ async function lookupClicked(word, contextLeft, contextRight) {
         posDiv.innerText = definition.parts_of_speech.join("; ");
         furiganaDiv.innerText = definition.furigana;
     }
+
+    document.getElementById("link").onclick = () => {
+        window.parent.postMessage(
+            {
+                name: "clickLink",
+                word: word
+            },
+            "*");
+    };
 }
 
 function updateDivShown(divName) {

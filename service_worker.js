@@ -62,6 +62,9 @@ function lookupWord() {
                 dialog.style.height = Math.max(parseInt(styles.height), event.data.height + parseInt(styles.paddingTop) + parseInt(styles.paddingBottom)) + "px";
                 dialog.style.width = Math.max(parseInt(styles.width), event.data.width + parseInt(styles.paddingLeft) + parseInt(styles.paddingRight)) + "px";
             }
+            else if (event.data.name === "clickLink") {
+                window.open("https://jisho.org/search/" + event.data.word);
+            }
         }
     }
 
